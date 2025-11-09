@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>DUYslidesAI - Định lý Cosin: Pytago Mở Rộng</title>
+
+  <!-- Font Awesome 5.15.4 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+  <!-- MathJax v3 (tex-svg) with global \displaystyle pre-processing -->
+  <script>
+    // Preprocess HTML to insert \displaystyle at the start of every math expression
+    function __insertDisplayStyle(html) {
+      if (!html) return html;
+      // 1) Temporarily protect $$...$$ blocks
+      const dispHolders = [];
+      html = html.replace(/\$\$([\s\S]*?)\$\$/g, (m, g1) => {
+        const idx = dispHolders.push(g1) - 1;
+        return `@@MJDISP${idx}@@`;
+      });
+      // 2) Protect \[...\] blocks
+      const brHolders = [];
+      html = html.replace(/\\\[([\s\S]*?)\\\]/g, (m, g1) => {
+        const idx = brHolders.push(g1) - 1;
+        return `@@MJBR${idx}@@`;
+      });
+      // 3) Protect \(...\) inline blocks
+      const parHolders = [];
+      html = html.replace(/\\\(([\s\S]*?)\\\)/g, (m, g1) => {
+        const idx = parHolders.push(g1) - 1;
+        return `@@MJPAR${idx}@@`;
+      });
+      // 4) Inline $...$ (avoid touching $$ by having protected them). Do not cross elements.
+      html = html.replace(/\$([^$]+?)\$/g, (m, g1) => {
+        const trimmed = g1.trimStart();
+        const needs = !trimmed.startsWith('\\displaystyle');
+        return '$' + (needs ? '\\displaystyle ' + g1 : g1) + '$';
+      });
+      // 5) Restore \(...\) with \displaystyle
+      html = html.replace(/@@MJPAR(\d+)@@/g, (m, i) => {
+        const content = parHolders[Number(i)] || '';
+        const trimmed = (content + '').trimStart();
+        const needs = !trimmed.startsWith('\\displaystyle');
+        return '\\(' + (needs ? '\\displaystyle ' + content : content) + '\\)';
+      });
+      // 6) Restore \[...\] with \displaystyle
+      html = html.replace(/@@MJBR(\d+)@@/g, (m, i) => {
+        const content = brHolders[Number(i)] || '';
+        const trimmed = (content + '').trimStart();
+        const needs = !trimmed.startsWith('\\displaystyle');
+        return '\\[' + (needs ? '\\displaystyle ' + content : content) + '\\]';
+      });
+      // 7) Restore $$...$$ with \displaystyle
+      html = html.replace(/@@MJDISP(\d+)@@/g, (m, i) => {
+        const content = dispHolders[Number(i)] || '';
+        const trimmed = (content + '').trimStart();
+        const needs = !trimmed.startsWith('\\displaystyle');
+        return '$$' + (needs ? '\\displaystyle ' + content : content) + '$$';
+      });
+      return html;
+    }
+
+    MathJax = {
+      tex: {
+        inlineMath: [["$","$"],["\\(","\\)"]],
+        displayMath: [["$$","$$"],["\\[","\\]"]]
+      },
+      svg: { fontCache: 'global' },
+      startup: {
+        ready: () => {
+          const root = document.querySelector('.container') || document.body;
+          if (root) {
+            root.innerHTML = __insertDisplayStyle(root.innerHTML);
+          }
+          MathJax.startup.defaultReady();
+        }
+      }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+
+  <style>
+    :root {
+      --color-memo: #16a085; --bg-memo: #f0fdfa;
+      --color-activity: #d35400; --bg-activity: #fff8f2;
+      --color-example: #2980b9; --bg-example: #f2f9ff;
+      --color-exercise: #8e44ad; --bg-exercise: #fbf5ff;
+      --color-proof: #0077b6; --bg-proof: #f2fbff;
+      --color-note: #c29304; --bg-note: #fffcf2;
+      --christmas-red: #c62828;
+      --christmas-green: #2e7d32;
+      --christmas-gold: #ffb300;
+      --christmas-blue: #1565c0;
+      --christmas-light-blue: #e1f5fe;
+    }
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body { 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+      line-height: 1.7; 
+      background: linear-gradient(to bottom, #e1f5fe, #b3e5fc, #81d4fa);
+      color: #1a237e; 
+      padding: 20px;
+      position: relative;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+    
+    /* Snow and Christmas elements container */
+    .christmas-background {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: -1;
+      overflow: hidden;
+    }
+    
+    .snowflake, .candy, .leaf {
+      position: absolute;
+      top: -50px;
+      color: white;
+      font-size: 1.5rem;
+      user-select: none;
+      pointer-events: none;
+      z-index: 1;
+    }
+    
+    .snowflake {
+      color: white;
+    }
+    
+    .candy {
+      color: #ff4081;
+    }
+    
+    .leaf {
+      color: #4caf50;
+    }
+    
+    .container { 
+      max-width: 980px; 
+      margin: 0 auto; 
+      background: rgba(255, 255, 255, 0.9); 
+      padding: 30px; 
+      border-radius: 12px; 
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      position: relative;
+      z-index: 2;
+      border: 2px solid var(--christmas-gold);
+    }
+    
+    .header { 
+      text-align: center; 
+      margin-bottom: 30px; 
+      border-bottom: 2px dashed var(--christmas-red); 
+      padding-bottom: 20px; 
+      position: relative;
+      background: linear-gradient(to right, var(--christmas-red), var(--christmas-green));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .header h1 { 
+      font-size: 2.2rem; 
+      margin-bottom: 8px; 
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    }
+    
+    .header .author { 
+      font-size: 1.05rem; 
+      color: var(--christmas-blue); 
+      font-style: italic; 
+    }
+
+    .box { 
+      position: relative; 
+      padding: 16px; 
+      padding-top: 25px; 
+      padding-bottom: 35px; 
+      padding-right: 25px; 
+      margin: 20px 0; 
+      border: 1px solid #e0e0e0; 
+      border-left-width: 5px; 
+      border-radius: 8px; 
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05); 
+      background: rgba(255, 255, 255, 0.9);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .box:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+    }
+    
+    .box-title { 
+      font-size: 1.16rem; 
+      font-weight: 700; 
+      margin-bottom: 12px; 
+      display: flex; 
+      align-items: center; 
+    }
+    
+    .box-title .fas { 
+      margin-right: 10px; 
+      font-size: 1.05em; 
+    }
+    
+    .reset-trigger-left {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 5px;
+        height: 100%;
+        cursor: pointer;
+        border-top-left-radius: 8px;
+        border-bottom-left-radius: 8px;
+        transition: background-color 0.2s ease-in-out;
+        background: linear-gradient(to bottom, var(--christmas-red), var(--christmas-green));
+    }
+    
+    .reset-trigger-left:hover {
+        background-color: rgba(231, 76, 60, 0.3);
+        width: 8px;
+    }
+
+    ul, ol { padding-left: 25px; }
+
+    .trigger-bar { 
+      height: 10px; 
+      width: 100%; 
+      cursor: pointer; 
+      opacity: 0.85; 
+      transition: opacity 0.2s; 
+    }
+    
+    .trigger-bar:hover { 
+      opacity: 1; 
+      height: 12px;
+    }
+    
+    .trigger-top { 
+      position: absolute; 
+      top: 0; 
+      left: 0; 
+      width: calc(100% - 10px); 
+      border-top-left-radius: 8px; 
+      overflow: hidden; 
+    }
+    
+    .trigger-image-link { 
+      background: linear-gradient(90deg, var(--christmas-red), var(--christmas-green), var(--christmas-blue)); 
+    }
+    
+    .trigger-right { 
+      position: absolute; 
+      top: 0; 
+      right: 0; 
+      width: 10px; 
+      height: 100%; 
+      background: linear-gradient(180deg, var(--christmas-red), var(--christmas-green)); 
+      cursor: pointer; 
+      opacity: 0.85; 
+      transition: opacity 0.2s; 
+      border-top-right-radius: 8px; 
+      border-bottom-right-radius: 8px; 
+    }
+    
+    .trigger-right:hover { 
+      opacity: 1; 
+      width: 12px;
+    }
+    
+    .triggers-bottom { 
+      position: absolute; 
+      bottom: 0; 
+      left: 0; 
+      width: calc(100% - 10px); 
+      border-bottom-left-radius: 8px; 
+      overflow: hidden; 
+    }
+    
+    .trigger-audio { 
+      background: linear-gradient(90deg, var(--christmas-gold), var(--christmas-red), var(--christmas-green)); 
+    }
+    
+    .trigger-image-file { 
+      background: linear-gradient(90deg, var(--christmas-blue), var(--christmas-green), var(--christmas-red), var(--christmas-gold)); 
+    }
+
+    .media-content-area { 
+      background: rgba(249, 249, 249, 0.7); 
+      border: 1px solid #eee; 
+      border-radius: 8px; 
+      padding: 15px; 
+      margin-top: 18px; 
+      display: none; 
+    }
+    
+    .image-placeholder { 
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+      min-height: 120px; 
+      border: 2px dashed #ccc; 
+      border-radius: 8px; 
+      color: #888; 
+      text-align: center; 
+      padding: 10px; 
+      font-size: 0.9em; 
+    }
+    
+    .image-preview { 
+      max-width: 100%; 
+      max-height: 300px; 
+      display: none; 
+      margin: 0 auto; 
+      border-radius: 8px; 
+    }
+    
+    .audio-container { 
+      margin-top: 15px; 
+      min-height: 25px; 
+    }
+    
+    .embed-app-container { 
+      display: none; 
+      margin-top: 15px; 
+    }
+    
+    .embed-app-container iframe { 
+      width: 100%; 
+      height: 450px; 
+      border: 1px solid #ddd; 
+      border-radius: 8px; 
+    }
+
+    .custom-audio-player { 
+      display: none; 
+      height: 24px; 
+      width: 100%; 
+      background: linear-gradient(90deg, var(--christmas-red), var(--christmas-green), var(--christmas-blue)); 
+      border-radius: 12px; 
+      cursor: pointer; 
+      padding: 0 15px; 
+      align-items: center; 
+      opacity: 0.9; 
+    }
+    
+    .play-pause-btn { 
+      width: 0; 
+      height: 0; 
+      border-style: solid; 
+      border-width: 7px 0 7px 12px; 
+      border-color: transparent transparent transparent #fff; 
+    }
+    
+    .play-pause-btn.playing { 
+      border-style: double; 
+      border-width: 0 0 0 10px; 
+      height: 14px; 
+      border-color: #fff; 
+    }
+    
+    .embed-audio-container { 
+      display: none; 
+    }
+    
+    .embed-audio-container iframe { 
+      border: none; 
+      border-radius: 8px; 
+      width: 100%; 
+      height: 60px; 
+    }
+    
+    audio, .file-input { 
+      display: none; 
+    }
+    
+    .memo-box { 
+      background-color: var(--bg-memo); 
+      border-left-color: var(--color-memo); 
+    } 
+    
+    .memo-box .box-title { 
+      color: var(--color-memo); 
+    }
+    
+    .activity-box { 
+      background-color: var(--bg-activity); 
+      border-left-color: var(--color-activity); 
+    } 
+    
+    .activity-box .box-title { 
+      color: var(--color-activity); 
+    }
+    
+    .example-box { 
+      background-color: var(--bg-example); 
+      border-left-color: var(--color-example); 
+    } 
+    
+    .example-box .box-title { 
+      color: var(--color-example); 
+    }
+    
+    .exercise-box { 
+      background-color: var(--bg-exercise); 
+      border-left-color: var(--color-exercise); 
+    } 
+    
+    .exercise-box .box-title { 
+      color: var(--color-exercise); 
+    }
+    
+    .proof-box { 
+      background-color: var(--bg-proof); 
+      border-left-color: var(--color-proof); 
+    } 
+    
+    .proof-box .box-title { 
+      color: var(--color-proof); 
+    }
+    
+    .note-box { 
+      background-color: var(--bg-note); 
+      border-left-color: var(--color-note); 
+    } 
+    
+    .note-box .box-title { 
+      color: var(--color-note); 
+    }
+
+    .section-container h2 { 
+      font-size: 1.6rem; 
+      color: var(--christmas-blue); 
+      margin: 34px 0 12px; 
+      padding-bottom: 6px; 
+      border-bottom: 2px solid var(--christmas-green); 
+      position: relative;
+    }
+    
+    .section-container h2:before {
+      content: "🎄";
+      margin-right: 10px;
+    }
+    
+    .math-term strong { 
+      color: var(--christmas-red); 
+    }
+    
+    .math-term em { 
+      color: var(--christmas-blue); 
+      font-style: italic; 
+    }
+    
+    table { 
+      width: 100%; 
+      border-collapse: collapse; 
+      margin: 15px 0; 
+    }
+    
+    th, td { 
+      border: 1px solid #ddd; 
+      padding: 10px; 
+      text-align: left; 
+    }
+    
+    th { 
+      background-color: #f7f9fa; 
+      font-weight: 600; 
+    }
+    
+    h3 { 
+      font-size: 1.4rem; 
+      color: var(--christmas-blue); 
+      margin-top: 25px; 
+      margin-bottom: 10px; 
+      position: relative;
+      padding-left: 25px;
+    }
+    
+    h3:before {
+      content: "❄️";
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+    
+    /* Christmas decorations */
+    .christmas-decoration {
+      position: absolute;
+      font-size: 1.5rem;
+      z-index: 1;
+      animation: float 3s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    .decoration-1 { top: 10%; left: 5%; animation-delay: 0s; }
+    .decoration-2 { top: 20%; right: 5%; animation-delay: 0.5s; }
+    .decoration-3 { bottom: 15%; left: 10%; animation-delay: 1s; }
+    .decoration-4 { bottom: 25%; right: 15%; animation-delay: 1.5s; }
+
+    /* Language Switcher */
+    .language-switcher {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .language-switcher button {
+      background-color: var(--christmas-blue);
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background-color 0.3s ease;
+    }
+    .language-switcher button:hover {
+      background-color: var(--christmas-red);
+    }
+    [lang="en"] { display: none; }
+    body.lang-en [lang="en"] { display: initial; }
+    body.lang-en [lang="vi"] { display: none; }
+  </style>
+</head>
+<body>
+
+<!-- Christmas background with falling elements -->
+<div class="christmas-background" id="christmas-bg"></div>
+
+<!-- Christmas decorations -->
+<div class="christmas-decoration decoration-1">🎁</div>
+<div class="christmas-decoration decoration-2">🔔</div>
+<div class="christmas-decoration decoration-3">⭐</div>
+<div class="christmas-decoration decoration-4">🦌</div>
+
+<div class="container">
+  <div class="language-switcher">
+    <button onclick="toggleLanguage()">
+      <span lang="vi">Chuyển đổi ngôn ngữ</span>
+      <span lang="en">Switch Language</span>
+    </button>
+  </div>
+  <div class="header">
+    <h1>
+      <span lang="vi">Định lý Cosin: Pytago Mở Rộng</span>
+      <span lang="en">Law of Cosines: Extended Pythagorean Theorem</span>
+    </h1>
+    <p class="author">
+      <span lang="vi">Nhóm thi E-learning</span>
+      <span lang="en">E-learning Contest Group</span>
+    </p>
+  </div>
+
+  <!-- Audio -->
+  <div class="box note-box" data-id="audio_lecture">
+    <div class="reset-trigger-left" title="Click để reset slide này" onclick="resetSingleSlide(this)"></div>
+    <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)" title="Nhập link ảnh"></div></div>
+    <div class="trigger-right" onclick="promptAppUrl(this)" title="Nhúng ứng dụng/web"></div>
+    <div class="box-title">
+      <i class="fas fa-headphones"></i> 
+      <span lang="vi">Âm thanh bài giảng</span>
+      <span lang="en">Lecture Audio</span>
+    </div>
+    <p>
+      <span lang="vi">Bấm vào thanh bên dưới để nghe giảng hoặc dùng mã nhúng.</span>
+      <span lang="en">Click the bar below to listen to the lecture or use an embed code.</span>
+    </p>
+    <div class="media-content-area">
+      <img class="image-preview" alt="Xem trước"><div class="image-placeholder">(Khu vực hiển thị ảnh/ứng dụng)</div>
+      <div class="embed-app-container"></div>
+      <div class="audio-container">
+          <div class="custom-audio-player"><div class="play-pause-btn"></div></div>
+          <div class="embed-audio-container">
+              <div><iframe width="300" height="60" src="https://vocaroo.com/embed/1oC0lVxoEb30?autoplay=0" frameborder="0" allow="autoplay"></iframe><br><a href="https://voca.ro/1oC0lVxoEb30" title="Vocaroo Voice Recorder" target="_blank">View on Vocaroo >></a></div>
+          </div>
+          <audio></audio>
+      </div>
+    </div>
+    <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)" title="Nhập âm thanh (mp3) hoặc mã nhúng"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)" title="Tải ảnh từ máy"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+
+  <!-- Meta Info -->
+  <div class="box note-box" data-id="meta_info">
+    <div class="reset-trigger-left" title="Click để reset slide này" onclick="resetSingleSlide(this)"></div>
+    <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)" title="Nhập link ảnh"></div></div>
+    <div class="trigger-right" onclick="promptAppUrl(this)" title="Nhúng ứng dụng/web"></div>
+    <div class="box-title">
+      <i class="fas fa-info-circle"></i> 
+      <span lang="vi">Thông tin bài học</span>
+      <span lang="en">Lesson Information</span>
+    </div>
+    <p>
+      <span lang="vi"><strong>Lớp/Khối:</strong> 10<br>
+      <strong>Thời lượng:</strong> 45 phút<br>
+      <strong>Thiết bị/ĐDDH:</strong> Máy chiếu, thước kẻ, compa.</span>
+      <span lang="en"><strong>Grade Level:</strong> 10<br>
+      <strong>Duration:</strong> 45 minutes<br>
+      <strong>Equipment/Teaching Aids:</strong> Projector, ruler, compass.</span>
+    </p>
+    <div class="media-content-area">
+      <img class="image-preview" alt="Xem trước"><div class="image-placeholder">(Khu vực hiển thị ảnh/ứng dụng)</div>
+      <div class="embed-app-container"></div>
+      <div class="audio-container"><div class="custom-audio-player"><div class="play-pause-btn"></div></div><div class="embed-audio-container"></div><audio></audio></div>
+    </div>
+    <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)" title="Nhập âm thanh (mp3) hoặc mã nhúng"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)" title="Tải ảnh từ máy"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+
+  <!-- Goals -->
+  <div class="box memo-box" data-id="goals">
+    <div class="reset-trigger-left" title="Click để reset slide này" onclick="resetSingleSlide(this)"></div>
+    <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)" title="Nhập link ảnh"></div></div>
+    <div class="trigger-right" onclick="promptAppUrl(this)" title="Nhúng ứng dụng/web"></div>
+    <div class="box-title">
+      <i class="fas fa-lightbulb"></i> 
+      <span lang="vi">Mục tiêu</span>
+      <span lang="en">Objectives</span>
+    </div>
+    <p>
+      <span lang="vi">Sau bài học này, chúng ta sẽ có thể:</span>
+      <span lang="en">After this lesson, we will be able to:</span>
+    </p>
+    <ul>
+      <li>
+        <span lang="vi">Giải thích được <span class="math-term"><strong>định lý cosin</strong> (<em>Law of Cosines</em>)</span>.</span>
+        <span lang="en">Explain the <span class="math-term"><strong>Law of Cosines</strong></span>.</span>
+      </li>
+      <li>
+        <span lang="vi">Vận dụng định lý cosin vào giải quyết những vấn đề mang tính thực tiễn.</span>
+        <span lang="en">Apply the Law of Cosines to solve practical problems.</span>
+      </li>
+    </ul>
+    <div class="media-content-area">
+      <img class="image-preview" alt="Xem trước"><div class="image-placeholder">(Khu vực hiển thị ảnh/ứng dụng)</div>
+      <div class="embed-app-container"></div>
+      <div class="audio-container"><div class="custom-audio-player"><div class="play-pause-btn"></div></div><div class="embed-audio-container"></div><audio></audio></div>
+    </div>
+    <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)" title="Nhập âm thanh (mp3) hoặc mã nhúng"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)" title="Tải ảnh từ máy"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+
+  <div class="section-container"><h2><span lang="vi">1) Từ khóa & khái niệm</span><span lang="en">1) Keywords & Concepts</span></h2></div>
+
+  <div class="box note-box" data-id="keywords">
+    <div class="reset-trigger-left" title="Click để reset slide này" onclick="resetSingleSlide(this)"></div>
+    <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)" title="Nhập link ảnh"></div></div>
+    <div class="trigger-right" onclick="promptAppUrl(this)" title="Nhúng ứng dụng/web"></div>
+    <div class="box-title">
+      <i class="fas fa-key"></i> 
+      <span lang="vi">Bảng thuật ngữ</span>
+      <span lang="en">Glossary</span>
+    </div>
+    <table>
+      <thead><tr><th><span lang="vi">Thuật ngữ</span><span lang="en">Term</span></th><th><span lang="vi">Diễn giải nhanh (có thể thêm ẩn dụ)</span><span lang="en">Quick Explanation (with optional metaphor)</span></th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="math-term"><strong><span lang="vi">Định lý Cosin</span></strong> (<em><span lang="en">Law of Cosines</span></em>)</span></td>
+          <td><span lang="vi">Công cụ quyền năng liên kết độ dài 3 cạnh và 1 góc trong một tam giác bất kỳ. Nó giống như định lý Pytago nhưng "xịn" hơn!</span><span lang="en">A powerful tool that links the lengths of 3 sides and 1 angle in any triangle. It's like the Pythagorean theorem, but "cooler"!</span></td>
+        </tr>
+        <tr>
+          <td><span class="math-term"><strong><span lang="vi">Tổng quát hóa</span></strong> (<em><span lang="en">Generalization</span></em>)</span></td>
+          <td><span lang="vi">Mở rộng một quy tắc từ trường hợp đặc biệt (tam giác vuông) ra cho mọi trường hợp (tam giác thường).</span><span lang="en">Extending a rule from a special case (right triangle) to all cases (any triangle).</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="media-content-area">
+      <img class="image-preview" alt="Xem trước"><div class="image-placeholder">(Khu vực hiển thị ảnh/ứng dụng)</div>
+      <div class="embed-app-container"></div>
+      <div class="audio-container"><div class="custom-audio-player"><div class="play-pause-btn"></div></div><div class="embed-audio-container"></div><audio></audio></div>
+    </div>
+    <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)" title="Nhập âm thanh (mp3) hoặc mã nhúng"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)" title="Tải ảnh từ máy"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+
+  <div class="box activity-box" data-id="warmup">
+    <div class="reset-trigger-left" title="Click để reset slide này" onclick="resetSingleSlide(this)"></div>
+    <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)" title="Nhập link ảnh"></div></div>
+    <div class="trigger-right" onclick="promptAppUrl(this)" title="Nhúng ứng dụng/web"></div>
+    <div class="box-title">
+      <i class="fas fa-laugh-beam"></i> 
+      <span lang="vi">Khởi động vui: Hồ Gươm và Tháp Rùa</span>
+      <span lang="en">Fun Warm-up: Hoan Kiem Lake and Turtle Tower</span>
+    </div>
+    <p>
+      <span lang="vi">Hãy tưởng tượng bạn đang ngắm Tháp Rùa từ bờ Hồ Gươm. Chỉ với những dụng cụ đơn giản, dễ chuẩn bị, bạn có thể xác định được khoảng cách từ vị trí bạn đứng tới Tháp Rùa. Em có biết vì sao không? Bài học hôm nay sẽ giúp chúng ta giải đáp thắc mắc đó.</span>
+      <span lang="en">Imagine you are looking at Turtle Tower from the shore of Hoan Kiem Lake. With simple, easy-to-prepare tools, you can determine the distance from where you are standing to Turtle Tower. Do you know why? Today's lesson will help us answer that question.</span>
+    </p>
+    <div class="media-content-area">
+      <img class="image-preview" alt="Xem trước"><div class="image-placeholder">(Khu vực hiển thị ảnh/ứng dụng)</div>
+      <div class="embed-app-container"></div>
+      <div class="audio-container"><div class="custom-audio-player"><div class="play-pause-btn"></div></div><div class="embed-audio-container"></div><audio></audio></div>
+    </div>
+    <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)" title="Nhập âm thanh (mp3) hoặc mã nhúng"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)" title="Tải ảnh từ máy"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+
+  <div class="section-container"><h2><span lang="vi">2) Nội dung cốt lõi</span><span lang="en">2) Core Content</span></h2></div>
+  
+  <div class="box note-box" data-id="history">
+      <div class="reset-trigger-left" title="Click để reset slide này" onclick="resetSingleSlide(this)"></div>
+      <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)"></div></div><div class="trigger-right" onclick="promptAppUrl(this)"></div>
+      <div class="box-title">
+        <i class="fas fa-history"></i> 
+        <span lang="vi">Một chút lịch sử</span>
+        <span lang="en">A Bit of History</span>
+      </div>
+      <p>
+        <span lang="vi">Tư tưởng về định lý Cosin đã có từ thời Hy Lạp cổ đại trong bộ sách <em>"Elements"</em> của nhà toán học Euclid. Tuy nhiên, phải đến thế kỷ 15, nhà toán học người Ba Tư <strong>Al-Kashi</strong> mới là người đầu tiên trình bày nó dưới dạng công thức đại số tường minh như ngày nay. Vì vậy, định lý này đôi khi còn được gọi là <strong>Định lý Al-Kashi</strong>.</span>
+        <span lang="en">The concept of the Law of Cosines dates back to ancient Greece in Euclid's <em>"Elements"</em>. However, it was not until the 15th century that the Persian mathematician <strong>Al-Kashi</strong> first presented it in its explicit algebraic form as it is known today. Therefore, this theorem is sometimes also called <strong>Al-Kashi's Theorem</strong>.</span>
+      </p>
+      <div class="media-content-area">
+        <img class="image-preview" alt="Xem trước"><div class="image-placeholder">(Khu vực hiển thị ảnh/ứng dụng)</div>
+        <div class="embed-app-container"></div>
+        <div class="audio-container"><div class="custom-audio-player"><div class="play-pause-btn"></div></div><div class="embed-audio-container"></div><audio></audio></div>
+      </div>
+      <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+
+  <div class="box example-box" data-id="cosine_theorem">
+      <div class="reset-trigger-left" title="Click để reset slide này" onclick="resetSingleSlide(this)"></div>
+      <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)"></div></div><div class="trigger-right" onclick="promptAppUrl(this)"></div>
+      <div class="box-title">
+        <i class="fas fa-superscript"></i> 
+        <span lang="vi">Định lý Cosin</span>
+        <span lang="en">The Law of Cosines</span>
+      </div>
+      <p>
+        <span lang="vi">Trong một tam giác $ABC$ bất kỳ, với $BC=a$, $AC=b$, $AB=c$:</span>
+        <span lang="en">In any triangle $ABC$, with $BC=a$, $AC=b$, $AB=c$:</span>
+      </p>
+      <ul>
+        <li>
+          <span lang="vi">Bình phương một cạnh bằng tổng bình phương hai cạnh còn lại, trừ đi hai lần tích của hai cạnh đó nhân với cosin của góc xen giữa.</span>
+          <span lang="en">The square of one side of a triangle is equal to the sum of the squares of the other two sides minus twice the product of those two sides and the cosine of the included angle.</span>
+        </li>
+      </ul>
+      <p><span lang="vi">Cụ thể, ta có các công thức:</span><span lang="en">Specifically, we have the following formulas:</span></p>
+      $$ a^2 = b^2 + c^2 - 2bc \cos A $$
+      $$ b^2 = a^2 + c^2 - 2ac \cos B $$
+      $$ c^2 = a^2 + b^2 - 2ab \cos C $$
+      <div class="media-content-area">
+        <img class="image-preview" alt="Xem trước"><div class="image-placeholder">(Khu vực hiển thị ảnh/ứng dụng)</div>
+        <div class="embed-app-container"></div>
+        <div class="audio-container"><div class="custom-audio-player"><div class="play-pause-btn"></div></div><div class="embed-audio-container"></div><audio></audio></div>
+      </div>
+      <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+  
+  <div class="box note-box" data-id="pythagorean_remark">
+      <div class="reset-trigger-left" title="Click để reset slide này" onclick="resetSingleSlide(this)"></div>
+      <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)"></div></div><div class="trigger-right" onclick="promptAppUrl(this)"></div>
+      <div class="box-title">
+        <i class="fas fa-sticky-note"></i> 
+        <span lang="vi">Pytago là trường hợp đặc biệt</span>
+        <span lang="en">Pythagoras is a Special Case</span>
+      </div>
+      <p>
+        <span lang="vi">Khi tam giác $ABC$ vuông tại $C$, ta có $\hat{C} = 90^\circ$.</span>
+        <span lang="en">When triangle $ABC$ is a right triangle at $C$, we have $\hat{C} = 90^\circ$.</span>
+      </p>
+      <p>
+        <span lang="vi">Khi đó $\cos C = \cos 90^\circ = 0$.</span>
+        <span lang="en">In this case, $\cos C = \cos 90^\circ = 0$.</span>
+      </p>
+      <p><span lang="vi">Công thức định lý Cosin trở thành:</span><span lang="en">The Law of Cosines formula becomes:</span></p>
+      $$ c^2 = a^2 + b^2 - 2ab \cdot 0 \implies c^2 = a^2 + b^2 $$
+      <p>
+        <span lang="vi">Đây chính là định lý Pytago quen thuộc! Vì vậy, <strong>định lý Cosin là sự tổng quát hóa của định lý Pytago</strong>.</span>
+        <span lang="en">This is the familiar Pythagorean theorem! Therefore, <strong>the Law of Cosines is a generalization of the Pythagorean theorem</strong>.</span>
+      </p>
+      <div class="media-content-area">
+        <img class="image-preview" alt="Xem trước"><div class="image-placeholder">(Khu vực hiển thị ảnh/ứng dụng)</div>
+        <div class="embed-app-container"></div>
+        <div class="audio-container"><div class="custom-audio-player"><div class="play-pause-btn"></div></div><div class="embed-audio-container"></div><audio></audio></div>
+      </div>
+      <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+
+  <div class="box proof-box" data-id="proof">
+      <div class="reset-trigger-left" title="Click để reset slide này" onclick="resetSingleSlide(this)"></div>
+      <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)"></div></div><div class="trigger-right" onclick="promptAppUrl(this)"></div>
+      <div class="box-title">
+        <i class="fas fa-search"></i> 
+        <span lang="vi">Chứng minh (tham khảo)</span>
+        <span lang="en">Proof (for reference)</span>
+      </div>
+      <p>
+        <span lang="vi">Xét tam giác $ABC$. Kẻ đường cao $BH$ từ $B$ xuống $AC$.</span>
+        <span lang="en">Consider triangle $ABC$. Draw the altitude $BH$ from $B$ to $AC$.</span>
+      </p>
+      <ul>
+          <li>
+            <span lang="vi">Áp dụng định lý Pytago trong tam giác vuông $ABH$, ta có: $c^2 = AB^2 = BH^2 + AH^2$.</span>
+            <span lang="en">Applying the Pythagorean theorem in the right triangle $ABH$, we have: $c^2 = AB^2 = BH^2 + AH^2$.</span>
+          </li>
+          <li>
+            <span lang="vi">Ta biểu diễn $BH$ và $AH$ theo $a,b,C$:
+                Trong tam giác vuông $BCH$: $BH = BC\sin C = a\sin C$ và $CH = BC\cos C = a\cos C$.
+                Do đó: $AH = AC - CH = b - a\cos C$.
+            </span>
+            <span lang="en">We express $BH$ and $AH$ in terms of $a,b,C$:
+                In the right triangle $BCH$: $BH = BC\sin C = a\sin C$ and $CH = BC\cos C = a\cos C$.
+                Therefore: $AH = AC - CH = b - a\cos C$.
+            </span>
+          </li>
+          <li>
+            <span lang="vi">Thay vào biểu thức ban đầu:</span>
+            <span lang="en">Substituting into the initial expression:</span>
+              $$ c^2 = (a\sin C)^2 + (b - a\cos C)^2 $$
+              $$ c^2 = a^2\sin^2 C + b^2 - 2ab\cos C + a^2\cos^2 C $$
+              $$ c^2 = a^2(\sin^2 C + \cos^2 C) + b^2 - 2ab\cos C $$
+              $$ c^2 = a^2 \cdot 1 + b^2 - 2ab\cos C $$
+              <span lang="vi">Vậy: $c^2 = a^2 + b^2 - 2ab\cos C$. (Điều phải chứng minh)</span>
+              <span lang="en">Thus: $c^2 = a^2 + b^2 - 2ab\cos C$. (Q.E.D.)</span>
+          </li>
+      </ul>
+      <div class="media-content-area">
+        <img class="image-preview" alt="Xem trước"><div class="image-placeholder">(Khu vực hiển thị ảnh/ứng dụng)</div>
+        <div class="embed-app-container"></div>
+        <div class="audio-container"><div class="custom-audio-player"><div class="play-pause-btn"></div></div><div class="embed-audio-container"></div><audio></audio></div>
+      </div>
+      <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+
+  <h3><span lang="vi">Ví dụ minh họa</span><span lang="en">Illustrative Examples</span></h3>
+  
+  <div class="box example-box" data-id="example_1">
+      <div class="reset-trigger-left" title="Click để reset slide này" onclick="resetSingleSlide(this)"></div>
+      <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)"></div></div><div class="trigger-right" onclick="promptAppUrl(this)"></div>
+      <div class="box-title">
+        <i class="fas fa-flask"></i> 
+        <span lang="vi">Ví dụ 1 - Mức hiểu</span>
+        <span lang="en">Example 1 - Understanding Level</span>
+      </div>
+      <p>
+        <span lang="vi"><strong>Bài toán:</strong> Cho tam giác $ABC$ có cạnh $a=8$, $c=5$ và góc $\hat{B}=60^\circ$. Tính độ dài cạnh $b$.</span>
+        <span lang="en"><strong>Problem:</strong> Given a triangle $ABC$ with sides $a=8$, $c=5$, and angle $\hat{B}=60^\circ$. Calculate the length of side $b$.</span>
+      </p>
+      <div class="media-content-area">
+        <img class="image-preview" alt="Xem trước"><div class="image-placeholder">(Khu vực hiển thị ảnh/ứng dụng)</div>
+        <div class="embed-app-container"></div>
+        <div class="audio-container"><div class="custom-audio-player"><div class="play-pause-btn"></div></div><div class="embed-audio-container"></div><audio></audio></div>
+      </div>
+      <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+  <div class="box proof-box" data-id="solution_1">
+      <div class="reset-trigger-left" title="Click để reset slide này" onclick="resetSingleSlide(this)"></div>
+      <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)"></div></div><div class="trigger-right" onclick="promptAppUrl(this)"></div>
+      <div class="box-title">
+        <i class="fas fa-check"></i> 
+        <span lang="vi">Lời giải</span>
+        <span lang="en">Solution</span>
+      </div>
+      <p>
+        <span lang="vi">Áp dụng trực tiếp định lý Cosin cho cạnh $b$:</span>
+        <span lang="en">Directly apply the Law of Cosines for side $b$:</span>
+      </p>
+      $$ b^2 = a^2 + c^2 - 2ac \cos B $$
+      <p>
+        <span lang="vi">Thay số vào, ta có:</span>
+        <span lang="en">Substituting the values, we get:</span>
+      </p>
+      $$ b^2 = 8^2 + 5^2 - 2 \cdot 8 \cdot 5 \cdot \cos 60^\circ $$
+      $$ b^2 = 64 + 25 - 80 \cdot \frac{1}{2} $$
+      $$ b^2 = 89 - 40 = 49 $$
+      <p>
+        <span lang="vi">Vậy $b = \sqrt{49} = 7$.</span>
+        <span lang="en">Thus, $b = \sqrt{49} = 7$.</span>
+      </p>
+      <div class="media-content-area">
+        <img class="image-preview" alt="Xem trước"><div class="image-placeholder">(Khu vực hiển thị ảnh/ứng dụng)</div>
+        <div class="embed-app-container"></div>
+        <div class="audio-container"><div class="custom-audio-player"><div class="play-pause-btn"></div></div><div class="embed-audio-container"></div><audio></audio></div>
+      </div>
+      <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+  
+  <div class="box example-box" data-id="example_2">
+      <div class="reset-trigger-left" title="Click để reset slide này" onclick="resetSingleSlide(this)"></div>
+      <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)"></div></div><div class="trigger-right" onclick="promptAppUrl(this)"></div>
+      <div class="box-title">
+        <i class="fas fa-flask"></i> 
+        <span lang="vi">Ví dụ 2 - Mức vận dụng</span>
+        <span lang="en">Example 2 - Application Level</span>
+      </div>
+      <p>
+        <span lang="vi"><strong>Bài toán:</strong> Một khu vườn hình tam giác có độ dài ba cạnh là 15m, 20m, và 25m. Hãy tính góc lớn nhất của khu vườn.</span>
+        <span lang="en"><strong>Problem:</strong> A triangular garden has side lengths of 15m, 20m, and 25m. Calculate the largest angle of the garden.</span>
+      </p>
+      <div class="media-content-area">
+        <img class="image-preview" alt="Xem trước"><div class="image-placeholder">(Khu vực hiển thị ảnh/ứng dụng)</div>
+        <div class="embed-app-container"></div>
+        <div class="audio-container"><div class="custom-audio-player"><div class="play-pause-btn"></div></div><div class="embed-audio-container"></div><audio></audio></div>
+      </div>
+      <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+  <div class="box proof-box" data-id="solution_2">
+      <div class="reset-trigger-left" title="Click để reset slide này" onclick="resetSingleSlide(this)"></div>
+      <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)"></div></div><div class="trigger-right" onclick="promptAppUrl(this)"></div>
+      <div class="box-title">
+        <i class="fas fa-check"></i> 
+        <span lang="vi">Lời giải</span>
+        <span lang="en">Solution</span>
+      </div>
+      <p>
+        <span lang="vi">Trong một tam giác, góc lớn nhất đối diện với cạnh dài nhất. Gọi ba cạnh là $a=15, b=20, c=25$. Cạnh dài nhất là $c=25$, vậy góc lớn nhất là góc $C$.</span>
+        <span lang="en">In a triangle, the largest angle is opposite the longest side. Let the three sides be $a=15, b=20, c=25$. The longest side is $c=25$, so the largest angle is $C$.</span>
+      </p>
+      <p>
+        <span lang="vi">Từ công thức $c^2 = a^2 + b^2 - 2ab\cos C$, ta suy ra:</span>
+        <span lang="en">From the formula $c^2 = a^2 + b^2 - 2ab\cos C$, we deduce:</span>
+      </p>
+      $$ \cos C = \frac{a^2 + b^2 - c^2}{2ab} $$
+      <p><span lang="vi">Thay số:</span><span lang="en">Substitute values:</span></p>
+      $$ \cos C = \frac{15^2 + 20^2 - 25^2}{2 \cdot 15 \cdot 20} = \frac{225 + 400 - 625}{600} = \frac{0}{600} = 0 $$
+      <p>
+        <span lang="vi">Vì $\cos C = 0$, suy ra $\hat{C} = 90^\circ$.</span>
+        <span lang="en">Since $\cos C = 0$, it follows that $\hat{C} = 90^\circ$.</span>
+      </p>
+      <p>
+        <span lang="vi">(Nhận xét: Đây là một tam giác vuông!)</span>
+        <span lang="en">(Remark: This is a right triangle!)</span>
+      </p>
+      <div class="media-content-area">
+        <img class="image-preview" alt="Xem trước"><div class="image-placeholder">(Khu vực hiển thị ảnh/ứng dụng)</div>
+        <div class="embed-app-container"></div>
+        <div class="audio-container"><div class="custom-audio-player"><div class="play-pause-btn"></div></div><div class="embed-audio-container"></div><audio></audio></div>
+      </div>
+      <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+  
+  <div class="box example-box" data-id="example_3">
+      <div class="reset-trigger-left" title="Click để reset slide này" onclick="resetSingleSlide(this)"></div>
+      <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)"></div></div><div class="trigger-right" onclick="promptAppUrl(this)"></div>
+      <div class="box-title">
+        <i class="fas fa-flask"></i> 
+        <span lang="vi">Ví dụ 3 - Mức sáng tạo</span>
+        <span lang="en">Example 3 - Creative Level</span>
+      </div>
+      <p>
+        <span lang="vi"><strong>Bài toán thực tế:</strong> Hai tàu thủy cùng xuất phát từ cảng A, đi theo hai hướng tạo với nhau một góc $50^\circ$. Tàu thứ nhất chạy với tốc độ 30 km/h, tàu thứ hai chạy với tốc độ 40 km/h. Hỏi sau 2 giờ, hai tàu cách nhau bao nhiêu km?</span>
+        <span lang="en"><strong>Real-world problem:</strong> Two ships depart from port A simultaneously, traveling in two directions that form a $50^\circ$ angle with each other. The first ship travels at 30 km/h, and the second ship travels at 40 km/h. How far apart are the two ships after 2 hours?</span>
+      </p>
+      <div class="media-content-area">
+        <img class="image-preview" alt="Xem trước"><div class="image-placeholder">(Khu vực hiển thị ảnh/ứng dụng)</div>
+        <div class="embed-app-container"></div>
+        <div class="audio-container"><div class="custom-audio-player"><div class="play-pause-btn"></div></div><div class="embed-audio-container"></div><audio></audio></div>
+      </div>
+      <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+  <div class="box proof-box" data-id="solution_3">
+      <div class="reset-trigger-left" title="Click để reset slide này" onclick="resetSingleSlide(this)"></div>
+      <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)"></div></div><div class="trigger-right" onclick="promptAppUrl(this)"></div>
+      <div class="box-title">
+        <i class="fas fa-check"></i> 
+        <span lang="vi">Lời giải</span>
+        <span lang="en">Solution</span>
+      </div>
+      <p>
+        <span lang="vi">Gọi vị trí của tàu thứ nhất sau 2 giờ là B, tàu thứ hai là C. Ta cần tính khoảng cách BC.</span>
+        <span lang="en">Let the position of the first ship after 2 hours be B, and the second ship be C. We need to calculate the distance BC.</span>
+      </p>
+      <ul>
+          <li>
+            <span lang="vi">Quãng đường tàu thứ nhất đi được: $AB = 30 \text{ km/h} \times 2 \text{ h} = 60 \text{ km}$.</span>
+            <span lang="en">Distance traveled by the first ship: $AB = 30 \text{ km/h} \times 2 \text{ h} = 60 \text{ km}$.</span>
+          </li>
+          <li>
+            <span lang="vi">Quãng đường tàu thứ hai đi được: $AC = 40 \text{ km/h} \times 2 \text{ h} = 80 \text{ km}$.</span>
+            <span lang="en">Distance traveled by the second ship: $AC = 40 \text{ km/h} \times 2 \text{ h} = 80 \text{ km}$.</span>
+          </li>
+          <li>
+            <span lang="vi">Góc xen giữa hai hướng đi là $\hat{A}=50^\circ$.</span>
+            <span lang="en">The angle between the two directions is $\hat{A}=50^\circ$.</span>
+          </li>
+      </ul>
+      <p>
+        <span lang="vi">Áp dụng định lý Cosin cho tam giác $ABC$ để tính cạnh $BC=a$:</span>
+        <span lang="en">Apply the Law of Cosines to triangle $ABC$ to calculate side $BC=a$:</span>
+      </p>
+      $$ a^2 = b^2 + c^2 - 2bc \cos A $$
+      $$ BC^2 = AC^2 + AB^2 - 2 \cdot AC \cdot AB \cdot \cos 50^\circ $$
+      $$ BC^2 = 80^2 + 60^2 - 2 \cdot 80 \cdot 60 \cdot \cos 50^\circ $$
+      $$ BC^2 = 6400 + 3600 - 9600 \cdot (0.6428) $$
+      $$ BC^2 = 10000 - 6170.88 = 3829.12 $$
+      $$ BC = \sqrt{3829.12} \approx 61.88 \text{ km} $$
+      <p>
+        <span lang="vi">Vậy sau 2 giờ, hai tàu cách nhau khoảng 61.88 km.</span>
+        <span lang="en">So, after 2 hours, the two ships are approximately 61.88 km apart.</span>
+      </p>
+      <div class="media-content-area">
+        <img class="image-preview" alt="Xem trước"><div class="image-placeholder">(Khu vực hiển thị ảnh/ứng dụng)</div>
+        <div class="embed-app-container"></div>
+        <div class="audio-container"><div class="custom-audio-player"><div class="play-pause-btn"></div></div><div class="embed-audio-container"></div><audio></audio></div>
+      </div>
+      <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+
+  <div class="section-container"><h2><span lang="vi">3) Hoạt động nhóm</span><span lang="en">3) Group Activity</span></h2></div>
+
+  <div class="box activity-box" data-id="group_activity">
+    <div class="reset-trigger-left" title="Click để reset slide này" onclick="resetSingleSlide(this)"></div>
+    <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)"></div></div>
+    <div class="trigger-right" onclick="promptAppUrl(this)"></div>
+    <div class="box-title">
+      <i class="fas fa-laugh-beam"></i> 
+      <span lang="vi">Mini game: "Vượt chướng ngại vật"</span>
+      <span lang="en">Mini game: "Overcoming Obstacles"</span>
+    </div>
+    <ul>
+      <li>
+        <span lang="vi">Giáo viên chia lớp học thành 5 nhóm</span>
+        <span lang="en">The teacher divides the class into 5 groups</span>
+      </li>
+      <li>
+        <span lang="vi">Mỗi nhóm lựa chọn một câu hỏi đơn giản về định lý cosin.</span>
+        <span lang="en">Each group chooses a simple question about the Law of Cosines.</span>
+      </li>
+      <li>
+        <span lang="vi">Nhiệm vụ: Dùng <span class="math-term"><strong>định lý Cosin</strong> (<em>Law of Cosines</em>)</span> để giải quyết câu hỏi</span>
+        <span lang="en">Task: Use the <span class="math-term"><strong>Law of Cosines</strong></span> to solve the question</span>
+      </li>
+    </ul>
+    <div class="media-content-area">
+      <img class="image-preview" alt="Xem trước"><div class="image-placeholder">(Khu vực hiển thị ảnh/ứng dụng)</div>
+      <div class="embed-app-container"></div>
+      <div class="audio-container"><div class="custom-audio-player"><div class="play-pause-btn"></div></div><div class="embed-audio-container"></div><audio></audio></div>
+    </div>
+    <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+
+  <div class="section-container"><h2><span lang="vi">4) Bài tập tự luyện</span><span lang="en">4) Practice Exercises</span></h2></div>
+
+  <h3><span lang="vi">Mức độ HIỂU</span><span lang="en">Understanding Level</span></h3>
+  <div class="box exercise-box" data-id="exercise_1">
+    <div class="reset-trigger-left" title="Click để reset slide này" onclick="resetSingleSlide(this)"></div>
+    <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)"></div></div>
+    <div class="trigger-right" onclick="promptAppUrl(this)"></div>
+    <div class="box-title">
+      <i class="fas fa-puzzle-piece"></i> 
+      <span lang="vi">Bài tập tự luyện 1</span>
+      <span lang="en">Practice Exercise 1</span>
+    </div>
+    <p>
+      <span lang="vi">Cho tam giác $ABC$ có $b=10$, $c=12$, $\hat{A}=30^\circ$. Tính cạnh $a$.</span>
+      <span lang="en">Given a triangle $ABC$ with $b=10$, $c=12$, $\hat{A}=30^\circ$. Calculate side $a$.</span>
+    </p>
+    <div class="media-content-area">
+      <img class="image-preview" alt="Xem trước"><div class="image-placeholder">(Khu vực hiển thị ảnh/ứng dụng)</div>
+      <div class="embed-app-container"></div>
+      <div class="audio-container"><div class="custom-audio-player"><div class="play-pause-btn"></div></div><div class="embed-audio-container"></div><audio></audio></div>
+    </div>
+    <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+  <div class="box exercise-box" data-id="exercise_2">
+    <div class="reset-trigger-left" title="Click để reset slide này" onclick="resetSingleSlide(this)"></div>
+    <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)"></div></div>
+    <div class="trigger-right" onclick="promptAppUrl(this)"></div>
+    <div class="box-title">
+      <i class="fas fa-puzzle-piece"></i> 
+      <span lang="vi">Bài tập tự luyện 2</span>
+      <span lang="en">Practice Exercise 2</span>
+    </div>
+    <p>
+      <span lang="vi">Cho tam giác $MNP$ có $m=5, n=7, p=8$. Tính $\cos M$.</span>
+      <span lang="en">Given a triangle $MNP$ with $m=5, n=7, p=8$. Calculate $\cos M$.</span>
+    </p>
+    <div class="media-content-area">
+      <img class="image-preview" alt="Xem trước"><div class="image-placeholder">(Khu vực hiển thị ảnh/ứng dụng)</div>
+      <div class="embed-app-container"></div>
+      <div class="audio-container"><div class="custom-audio-player"><div class="play-pause-btn"></div></div><div class="embed-audio-container"></div><audio></audio></div>
+    </div>
+    <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+  <div class="box exercise-box" data-id="exercise_3">
+    <div class="reset-trigger-left" title="Click để reset slide này" onclick="resetSingleSlide(this)"></div>
+    <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)"></div></div>
+    <div class="trigger-right" onclick="promptAppUrl(this)"></div>
+    <div class="box-title">
+      <i class="fas fa-puzzle-piece"></i> 
+      <span lang="vi">Bài tập tự luyện 3</span>
+      <span lang="en">Practice Exercise 3</span>
+    </div>
+    <p>
+      <span lang="vi">Viết công thức định lý Cosin để tính cạnh $AC$ trong tam giác $ABC$.</span>
+      <span lang="en">Write the Law of Cosines formula to calculate side $AC$ in triangle $ABC$.</span>
+    </p>
+    <div class="media-content-area">
+      <img class="image-preview" alt="Xem trước"><div class="image-placeholder">(Khu vực hiển thị ảnh/ứng dụng)</div>
+      <div class="embed-app-container"></div>
+      <div class="audio-container"><div class="custom-audio-player"><div class="play-pause-btn"></div></div><div class="embed-audio-container"></div><audio></audio></div>
+    </div>
+    <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+
+  <h3><span lang="vi">Mức độ VẬN DỤNG</span><span lang="en">Application Level</span></h3>
+  <div class="box exercise-box" data-id="exercise_4">
+    <div class="reset-trigger-left" title="Click để reset slide này" onclick="resetSingleSlide(this)"></div>
+    <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)"></div></div>
+    <div class="trigger-right" onclick="promptAppUrl(this)"></div>
+    <div class="box-title">
+      <i class="fas fa-puzzle-piece"></i> 
+      <span lang="vi">Bài tập tự luyện 4</span>
+      <span lang="en">Practice Exercise 4</span>
+    </div>
+    <p>
+      <span lang="vi">Cho tam giác $ABC$ có các cạnh $a=2\sqrt{3}$, $b=2\sqrt{2}$, $c=\sqrt{6}-\sqrt{2}$. Tính góc lớn nhất của tam giác.</span>
+      <span lang="en">Given a triangle $ABC$ with sides $a=2\sqrt{3}$, $b=2\sqrt{2}$, $c=\sqrt{6}-\sqrt{2}$. Calculate the largest angle of the triangle.</span>
+    </p>
+    <div class="media-content-area">
+      <img class="image-preview" alt="Xem trước"><div class="image-placeholder">(Khu vực hiển thị ảnh/ứng dụng)</div>
+      <div class="embed-app-container"></div>
+      <div class="audio-container"><div class="custom-audio-player"><div class="play-pause-btn"></div></div><div class="embed-audio-container"></div><audio></audio></div>
+    </div>
+    <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+  <div class="box exercise-box" data-id="exercise_5">
+    <div class="reset-trigger-left" title="Click để reset slide này" onclick="resetSingleSlide(this)"></div>
+    <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)"></div></div>
+    <div class="trigger-right" onclick="promptAppUrl(this)"></div>
+    <div class="box-title">
+      <i class="fas fa-puzzle-piece"></i> 
+      <span lang="vi">Bài tập tự luyện 5</span>
+      <span lang="en">Practice Exercise 5</span>
+    </div>
+    <p>
+      <span lang="vi">Hình bình hành $ABCD$ có $AB=3$, $BC=5$ và đường chéo $AC=7$. Tính độ dài đường chéo $BD$.</span>
+      <span lang="en">Parallelogram $ABCD$ has $AB=3$, $BC=5$, and diagonal $AC=7$. Calculate the length of diagonal $BD$.</span>
+    </p>
+    <div class="media-content-area">
+      <img class="image-preview" alt="Xem trước"><div class="image-placeholder">(Khu vực hiển thị ảnh/ứng dụng)</div>
+      <div class="embed-app-container"></div>
+      <div class="audio-container"><div class="custom-audio-player"><div class="play-pause-btn"></div></div><div class="embed-audio-container"></div><audio></audio></div>
+    </div>
+    <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+  <div class="box exercise-box" data-id="exercise_6">
+    <div class="reset-trigger-left" title="Click để reset slide này" onclick="resetSingleSlide(this)"></div>
+    <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)"></div></div>
+    <div class="trigger-right" onclick="promptAppUrl(this)"></div>
+    <div class="box-title">
+      <i class="fas fa-puzzle-piece"></i> 
+      <span lang="vi">Bài tập tự luyện 6</span>
+      <span lang="en">Practice Exercise 6</span>
+    </div>
+    <p>
+      <span lang="vi">Chứng minh rằng trong một tam giác $ABC$ bất kỳ, ta luôn có: $b\cos C + c\cos B = a$.</span>
+      <span lang="en">Prove that in any triangle $ABC$, we always have: $b\cos C + c\cos B = a$.</span>
+    </p>
+    <div class="media-content-area">
+      <img class="image-preview" alt="Xem trước"><div class="image-placeholder">(Khu vực hiển thị ảnh/ứng dụng)</div>
+      <div class="embed-app-container"></div>
+      <div class="audio-container"><div class="custom-audio-player"><div class="play-pause-btn"></div></div><div class="embed-audio-container"></div><audio></audio></div>
+    </div>
+    <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+
+  <h3><span lang="vi">Mức độ SÁNG TẠO</span><span lang="en">Creative Level</span></h3>
+  <div class="box exercise-box" data-id="exercise_7">
+    <div class="reset-trigger-left" title="Click để reset slide này" onclick="resetSingleSlide(this)"></div>
+    <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)"></div></div>
+    <div class="trigger-right" onclick="promptAppUrl(this)"></div>
+    <div class="box-title">
+      <i class="fas fa-puzzle-piece"></i> 
+      <span lang="vi">Bài tập tự luyện 7</span>
+      <span lang="en">Practice Exercise 7</span>
+    </div>
+    <p>
+      <span lang="vi">Để đo chiều cao của một ngọn tháp, người ta lấy hai điểm A, B trên mặt đất có khoảng cách $AB=100$m. Từ A và B, người ta nhìn thấy đỉnh C của tháp dưới các góc nâng lần lượt là $45^\circ$ và $60^\circ$. Góc $\hat{CAB}=75^\circ$. Tính chiều cao của ngọn tháp. (Bài toán phức tạp, kết hợp định lý Sin và Cosin).</span>
+      <span lang="en">To measure the height of a tower, two points A and B are taken on the ground with a distance of $AB=100$m. From A and B, the top C of the tower is observed at elevation angles of $45^\circ$ and $60^\circ$, respectively. The angle $\hat{CAB}=75^\circ$. Calculate the height of the tower. (A complex problem combining the Law of Sines and Cosines).</span>
+    </p>
+    <div class="media-content-area">
+      <img class="image-preview" alt="Xem trước"><div class="image-placeholder">(Khu vực hiển thị ảnh/ứng dụng)</div>
+      <div class="embed-app-container"></div>
+      <div class="audio-container"><div class="custom-audio-player"><div class="play-pause-btn"></div></div><div class="embed-audio-container"></div><audio></audio></div>
+    </div>
+    <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+
+  <div class="section-container"><h2><span lang="vi">5) Đáp án/Gợi ý lời giải (tuỳ chọn)</span><span lang="en">5) Answers/Solution Hints (optional)</span></h2></div>
+  
+  <div class="box proof-box" data-id="answers">
+      <div class="reset-trigger-left" title="Click để reset slide này" onclick="resetSingleSlide(this)"></div>
+      <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)"></div></div><div class="trigger-right" onclick="promptAppUrl(this)"></div>
+      <div class="box-title">
+        <i class="fas fa-check"></i> 
+        <span lang="vi">Gợi ý/Đáp án</span>
+        <span lang="en">Hints/Answers</span>
+      </div>
+      <ol>
+          <li>
+            <strong><span lang="vi">Bài 1:</span><span lang="en">Exercise 1:</span></strong> 
+            <span lang="vi">$a^2 \approx 45.06 \implies a \approx 6.71$.</span>
+            <span lang="en">$a^2 \approx 45.06 \implies a \approx 6.71$.</span>
+          </li>
+          <li>
+            <strong><span lang="vi">Bài 2:</span><span lang="en">Exercise 2:</span></strong> 
+            <span lang="vi">$\cos M= \frac{7^2+8^2-5^2}{2 \cdot 7 \cdot 8} = \frac{88}{112} = \frac{11}{14}$.</span>
+            <span lang="en">$\cos M= \frac{7^2+8^2-5^2}{2 \cdot 7 \cdot 8} = \frac{88}{112} = \frac{11}{14}$.</span>
+          </li>
+          <li>
+            <strong><span lang="vi">Bài 3:</span><span lang="en">Exercise 3:</span></strong> 
+            <span lang="vi">$AC^2 = AB^2 + BC^2 - 2 \cdot AB \cdot BC \cdot \cos B$.</span>
+            <span lang="en">$AC^2 = AB^2 + BC^2 - 2 \cdot AB \cdot BC \cdot \cos B$.</span>
+          </li>
+          <li>
+            <strong><span lang="vi">Bài 4:</span><span lang="en">Exercise 4:</span></strong> 
+            <span lang="vi">Cạnh lớn nhất là $a=2\sqrt{3}$. Góc lớn nhất là A. Tính $\cos A = -\frac{\sqrt{2}}{2} \implies \hat{A} = 135^\circ$.</span>
+            <span lang="en">The longest side is $a=2\sqrt{3}$. The largest angle is A. Calculate $\cos A = -\frac{\sqrt{2}}{2} \implies \hat{A} = 135^\circ$.</span>
+          </li>
+          <li>
+            <strong><span lang="vi">Bài 5:</span><span lang="en">Exercise 5:</span></strong> 
+            <span lang="vi">Dùng định lý Cosin trong $\triangle ABC$ để tìm $\cos B$. Sau đó dùng định lý Cosin trong $\triangle ABD$ để tìm $BD$. ($\hat{A}=180^\circ - \hat{B}$). Đáp số: $BD=\sqrt{11}$.</span>
+            <span lang="en">Use the Law of Cosines in $\triangle ABC$ to find $\cos B$. Then use the Law of Cosines in $\triangle ABD$ to find $BD$. ($\hat{A}=180^\circ - \hat{B}$). Answer: $BD=\sqrt{11}$.</span>
+          </li>
+          <li>
+            <strong><span lang="vi">Bài 6:</span><span lang="en">Exercise 6:</span></strong> 
+            <span lang="vi">Gợi ý: Thay $\cos C= \frac{a^2+b^2-c^2}{2ab}$ và $\cos B= \frac{a^2+c^2-b^2}{2ac}$ vào vế trái và rút gọn.</span>
+            <span lang="en">Hint: Substitute $\cos C= \frac{a^2+b^2-c^2}{2ab}$ and $\cos B= \frac{a^2+c^2-b^2}{2ac}$ into the left side and simplify.</span>
+          </li>
+          <li>
+            <strong><span lang="vi">Bài 7:</span><span lang="en">Exercise 7:</span></strong> 
+            <span lang="vi">Gợi ý: Dùng định lý Cosin trong $\triangle ABC$ mặt đất để tính cạnh $AC$ hoặc $BC$. Sau đó dùng tam giác vuông (với góc nâng) để tính chiều cao.</span>
+            <span lang="en">Hint: Use the Law of Cosines in the ground triangle $\triangle ABC$ to calculate side $AC$ or $BC$. Then use a right triangle (with the elevation angle) to calculate the height.</span>
+          </li>
+      </ol>
+      <div class="media-content-area">
+        <img class="image-preview" alt="Xem trước"><div class="image-placeholder">(Khu vực hiển thị ảnh/ứng dụng)</div>
+        <div class="embed-app-container"></div>
+        <div class="audio-container"><div class="custom-audio-player"><div class="play-pause-btn"></div></div><div class="embed-audio-container"></div><audio></audio></div>
+      </div>
+      <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+  
+  <div class="box note-box" data-id="pedagogy_note">
+      <div class="reset-trigger-left" title="Click để reset slide này" onclick="resetSingleSlide(this)"></div>
+      <div class="trigger-top"><div class="trigger-bar trigger-image-link" onclick="promptImageUrl(this)"></div></div><div class="trigger-right" onclick="promptAppUrl(this)"></div>
+      <div class="box-title">
+        <i class="fas fa-chalkboard-teacher"></i> 
+        <span lang="vi">Lưu ý sư phạm</span>
+        <span lang="en">Pedagogical Note</span>
+      </div>
+      <p>
+        <span lang="vi">Luôn nhấn mạnh mối liên hệ "thân thiết" giữa định lý Cosin và Pytago. Hãy xem Cosin là "Pytago phiên bản Pro", giúp học sinh dễ dàng ghi nhớ và thấy được sự phát triển của toán học. Khuyến khích học sinh vẽ hình cho mọi bài toán để trực quan hóa vấn đề.</span>
+        <span lang="en">Always emphasize the "close" relationship between the Law of Cosines and the Pythagorean theorem. See Cosine as "Pythagoras Pro version" to help students easily remember and understand the development of mathematics. Encourage students to draw figures for all problems to visualize the issues.</span>
+      </p>
+      <div class="media-content-area">
+        <img class="image-preview" alt="Xem trước"><div class="image-placeholder">(Khu vực hiển thị ảnh/ứng dụng)</div>
+        <div class="embed-app-container"></div>
+        <div class="audio-container"><div class="custom-audio-player"><div class="play-pause-btn"></div></div><div class="embed-audio-container"></div><audio></audio></div>
+      </div>
+      <div class="triggers-bottom"><div class="trigger-bar trigger-audio" onclick="promptAudio(this)"></div><div class="trigger-bar trigger-image-file" onclick="triggerFileInput(this)"></div></div><input type="file" class="file-input" onchange="handleFileInput(this)">
+  </div>
+
+</div>
+
+<script>
+  // HÀM TẠO HIỆU ỨNG RƠI
+  function createFallingElements() {
+    const bg = document.getElementById('christmas-bg');
+    const types = ['snowflake', 'candy', 'leaf'];
+    const symbols = {
+      snowflake: ['❄️', '❅', '❆'],
+      candy: ['🍬', '🍭'],
+      leaf: ['🍂', '🍁']
+    };
+    
+    setInterval(() => {
+      const type = types[Math.floor(Math.random() * types.length)];
+      const symbol = symbols[type][Math.floor(Math.random() * symbols[type].length)];
+      
+      const element = document.createElement('div');
+      element.className = type;
+      element.innerHTML = symbol;
+      element.style.left = Math.random() * 100 + 'vw';
+      element.style.fontSize = (Math.random() * 20 + 10) + 'px';
+      element.style.opacity = Math.random() * 0.5 + 0.5;
+      
+      // Tốc độ rơi khác nhau tạo cảm giác 3D
+      const duration = Math.random() * 5 + 5;
+      const delay = Math.random() * 5;
+      
+      element.style.animation = `fall ${duration}s linear ${delay}s infinite`;
+      
+      bg.appendChild(element);
+      
+      // Xóa phần tử sau khi rơi xong
+      setTimeout(() => {
+        if (element.parentNode) {
+          element.parentNode.removeChild(element);
+        }
+      }, (duration + delay) * 1000);
+    }, 200);
+  }
+  
+  // CSS animation cho hiệu ứng rơi
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes fall {
+      0% {
+        transform: translateY(-50px) rotate(0deg);
+      }
+      100% {
+        transform: translateY(100vh) rotate(360deg);
+      }
+    }
+  `;
+  document.head.appendChild(style);
+  
+  // HÀM RESET TỪNG SLIDE
+  function resetSingleSlide(triggerElement) {
+    const box = triggerElement.closest('.box');
+    if (!box) return;
+    const slideId = box.dataset.id;
+    if (!slideId) return;
+
+    // Lấy text của tiêu đề để hiển thị trong thông báo xác nhận
+    const titleText = box.querySelector('.box-title').innerText.trim();
+    if (confirm(`Bạn có chắc muốn reset nội dung của slide "${titleText}" không?`)) {
+      localStorage.removeItem(`mediaImage_${slideId}`);
+      localStorage.removeItem(`mediaAudio_${slideId}`);
+      localStorage.removeItem(`mediaApp_${slideId}`);
+      location.reload();
+    }
+  }
+
+  function getMediaElements(triggerElement) {
+    const box = triggerElement.closest('.box'); if (!box) return null;
+    return {
+      id: box.dataset.id, box: box,
+      mediaArea: box.querySelector('.media-content-area'),
+      preview: box.querySelector('.image-preview'), placeholder: box.querySelector('.image-placeholder'),
+      audioContainer: box.querySelector('.audio-container'), customPlayer: box.querySelector('.custom-audio-player'),
+      embedAudioContainer: box.querySelector('.audio-container .embed-audio-container'), audioPlayer: box.querySelector('audio'),
+      playBtn: box.querySelector('.play-pause-btn'), fileInput: box.querySelector('.file-input'),
+      appContainer: box.querySelector('.embed-app-container'),
+    };
+  }
+  
+  function updatePlaceholderVisibility(elements) {
+    if (!elements || !elements.placeholder || !elements.mediaArea) return;
+    const imageVisible = elements.preview && elements.preview.style.display === 'block';
+    const appVisible = elements.appContainer && elements.appContainer.style.display === 'block';
+    const audioVisible = (elements.customPlayer && elements.customPlayer.style.display !== 'none') || (elements.embedAudioContainer && elements.embedAudioContainer.style.display !== 'none');
+    
+    if (imageVisible || appVisible || audioVisible) {
+        elements.mediaArea.style.display = 'block';
+    } else {
+        elements.mediaArea.style.display = 'none';
+    }
+    elements.placeholder.style.display = (imageVisible || appVisible) ? 'none' : 'flex';
+  }
+  
+  function showImage(elements, src) { if (!elements) return; elements.preview.src = src; elements.preview.style.display = 'block'; updatePlaceholderVisibility(elements); }
+  function promptImageUrl(trigger) { const url = prompt('Nhập link ảnh (URL):'); const elements = getMediaElements(trigger); if (url && elements) { localStorage.setItem(`mediaImage_${elements.id}`, url); showImage(elements, url); } }
+  function handleFileInput(input) { const file = input.files[0]; const elements = getMediaElements(input); if (file && elements) { const reader = new FileReader(); reader.onload = (e) => { localStorage.setItem(`mediaImage_${elements.id}`, e.target.result); showImage(elements, e.target.result); }; reader.readAsDataURL(file); } }
+  function triggerFileInput(trigger) { const elements = getMediaElements(trigger); if (elements && elements.fileInput) { elements.fileInput.click(); } }
+  function showAudio(elements, audioData) {
+    if (!elements) return; 
+    elements.customPlayer.style.display = 'none'; 
+    elements.embedAudioContainer.style.display = 'none'; 
+    elements.embedAudioContainer.innerHTML = ''; 
+    elements.audioPlayer.src = '';
+    
+    if (audioData.trim().startsWith('<')) { // embed code
+      const cleaned = audioData.replace(/<br.*?>\s*<a.*?voca\.ro.*?<\/a>/i, '');
+      elements.embedAudioContainer.innerHTML = cleaned; 
+      elements.embedAudioContainer.style.display = 'block';
+    } else { // mp3 link
+      elements.audioPlayer.src = audioData; 
+      elements.customPlayer.style.display = 'flex';
+    }
+    updatePlaceholderVisibility(elements);
+  }
+  function promptAudio(trigger) { const input = prompt('Nhập link âm thanh (.mp3) hoặc mã nhúng:'); const elements = getMediaElements(trigger); if (input && input.trim() !== '' && elements) { localStorage.setItem(`mediaAudio_${elements.id}`, input); showAudio(elements, input); } }
+  function setupCustomAudioPlayer(elements) { if (!elements || elements.box.dataset.playerSetup === 'true') return; const togglePlay = () => { if (elements.audioPlayer.paused) elements.audioPlayer.play(); else elements.audioPlayer.pause(); }; elements.customPlayer?.addEventListener('click', togglePlay); elements.audioPlayer?.addEventListener('play', () => elements.playBtn?.classList.add('playing')); elements.audioPlayer?.addEventListener('pause', () => elements.playBtn?.classList.remove('playing')); elements.audioPlayer?.addEventListener('ended', () => elements.playBtn?.classList.remove('playing')); elements.box.dataset.playerSetup = 'true'; }
+  function showApp(elements, url) { if (!elements) return; elements.appContainer.innerHTML = `<iframe src="${url}"></iframe>`; elements.appContainer.style.display = 'block'; updatePlaceholderVisibility(elements); }
+  function promptAppUrl(trigger) { const url = prompt('Nhập link của ứng dụng hoặc trang web để nhúng:'); const elements = getMediaElements(trigger); if (url && elements) { localStorage.setItem(`mediaApp_${elements.id}`, url); showApp(elements, url); } }
+  
+  // Language switcher functionality
+  let currentLang = 'vi'; // Default language
+  function toggleLanguage() {
+    currentLang = currentLang === 'vi' ? 'en' : 'vi';
+    document.body.classList.toggle('lang-en', currentLang === 'en');
+    localStorage.setItem('preferredLang', currentLang); // Save preference
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // Check for saved language preference
+    const savedLang = localStorage.getItem('preferredLang');
+    if (savedLang && savedLang !== 'vi') { // Only apply if it's not the default
+      currentLang = savedLang;
+      document.body.classList.add('lang-en');
+    }
+
+    // Khởi tạo hiệu ứng rơi
+    createFallingElements();
+    
+    document.querySelectorAll('.box[data-id]').forEach((box) => {
+      const elements = getMediaElements(box); if (!elements) return;
+      
+      const imgData = localStorage.getItem(`mediaImage_${elements.id}`); if (imgData) showImage(elements, imgData);
+      const audioData = localStorage.getItem(`mediaAudio_${elements.id}`); if (audioData) showAudio(elements, audioData);
+      const appData = localStorage.getItem(`mediaApp_${elements.id}`); if (appData) showApp(elements, appData);
+      
+      const embedAudio = elements.embedAudioContainer?.querySelector('iframe');
+      if (embedAudio && embedAudio.getAttribute('src')) {
+          showAudio(elements, embedAudio.outerHTML);
+      }
+
+      setupCustomAudioPlayer(elements);
+    });
+  });
+</script>
+
+</body>
+</html>
